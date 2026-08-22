@@ -1,0 +1,9 @@
+{
+  "name": "Dave’s Fart Blaster",
+  "short_name": "Dave’s Fart Blaster",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b0d0c",
+  "theme_color": "#161616",
+  "description": "Dave’s Fart Blaster — 16 ridiculous fart sounds with Bluetooth-ready loud output."
+}
