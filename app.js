@@ -1,0 +1,25 @@
+let ctx;
+let outputBus;
+let limiter;
+let activeNodes=[];
+function getCtx(){
+  if(ctx) return ctx;
+  ctx=new (window.AudioContext||window.webkitAudioContext)();
+  outputBus=ctx.createGain();
+  limiter=ctx.createDynamicsCompressor();
+  limiter.threshold.value=-8; limiter.knee.value=4; limiter.ratio.value=18; limiter.attack.value=.003; limiter.release.value=.18;
+  outputBus.connect(limiter); limiter.connect(ctx.destination); return ctx;
+}
+function stopAll(){activeNodes.forEach(n=>{try{n.stop?.()}catch{} try{n.disconnect?.()}catch{}});activeNodes=[]}
+function noiseBuffer(seconds=1){const c=getCtx(),b=c.createBuffer(1,Math.max(1,c.sampleRate*seconds),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b}
+function playFart(type='classic'){
+ const c=getCtx();if(c.state==='suspended')c.resume();const now=c.currentTime;const vol=+document.getElementById('volume').value;outputBus.gain.setTargetAtTime(vol,c.currentTime,.01);
+ let cfg={classic:[.65,95,45,.85,10],wet:[1.05,80,30,1,22],squeak:[.45,220,100,.5,5],thunder:[1.65,65,28,1.2,12],bubble:[1.15,105,42,.85,34],tiny:[.25,160,90,.35,3],rip:[.7,125,45,.8,7],monster:[2,58,24,1.3,18],shart:[1.45,72,24,1.15,38],diarrhea:[2.4,68,22,1.15,46],mudslide:[2.15,55,20,1.25,28],gurgler:[1.8,92,26,1,52],cheeks:[1.1,118,38,.95,26],sick:[3,52,20,1.2,16],machinegun:[1.25,145,40,.95,42],surprise:[1.9,180,24,1.05,31]}[type];
+ const [dur,startF,endF,gainPeak,wobble]=cfg;const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(Math.max(.001,vol*gainPeak),now+.025);master.gain.exponentialRampToValueAtTime(.0001,now+dur);master.connect(outputBus);
+ const osc=c.createOscillator();osc.type='sawtooth';osc.frequency.setValueAtTime(startF,now);osc.frequency.exponentialRampToValueAtTime(Math.max(20,endF),now+dur);osc.connect(master);osc.start(now);osc.stop(now+dur);
+ const src=c.createBufferSource();src.buffer=noiseBuffer(dur);const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=Math.max(45,startF*1.3);bp.Q.value=.6;const ng=c.createGain();ng.gain.setValueAtTime(.0001,now);ng.gain.linearRampToValueAtTime(vol*.38,now+.03);ng.gain.exponentialRampToValueAtTime(.0001,now+dur);src.connect(bp);bp.connect(ng);ng.connect(outputBus);src.start(now);src.stop(now+dur);
+ if(wobble>0){const lfo=c.createOscillator(),lfg=c.createGain();lfo.frequency.value=wobble;lfg.gain.value=startF*.18;lfo.connect(lfg);lfg.connect(osc.frequency);lfo.start(now);lfo.stop(now+dur);activeNodes.push(lfo,lfg)}
+ if(['wet','bubble','shart','diarrhea','mudslide','gurgler','sick','surprise'].includes(type)){for(let i=0;i<((type==='diarrhea'||type==='shart')?18:10);i++){const t=now+Math.random()*dur*.78,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=70+Math.random()*90;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol*.2,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+.06+Math.random()*.08);o.connect(g);g.connect(outputBus);o.start(t);o.stop(t+.15);activeNodes.push(o,g)}}
+ if(['machinegun','cheeks','shart','diarrhea'].includes(type)){const pops=type==='machinegun'?12:7;for(let i=0;i<pops;i++){const t=now+i*(dur/(pops+1)),o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=55+Math.random()*95;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol*(.12+Math.random()*.18),t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+.045+Math.random()*.055);o.connect(g);g.connect(outputBus);o.start(t);o.stop(t+.12);activeNodes.push(o,g)}}activeNodes.push(osc,src,master,bp,ng)
+}
+const types=['classic','wet','squeak','thunder','bubble','tiny','rip','monster','shart','diarrhea','mudslide','gurgler','cheeks','sick','machinegun','surprise'];document.querySelectorAll('.fart').forEach(b=>b.addEventListener('click',()=>playFart(b.dataset.fart)));document.getElementById('randomBtn').onclick=()=>playFart(types[Math.floor(Math.random()*types.length)]);document.getElementById('testBtn').onclick=()=>playFart('tiny');document.getElementById('stopBtn').onclick=stopAll;document.getElementById('count').oninput=e=>document.getElementById('countLabel').textContent=e.target.value;document.getElementById('rapidBtn').onclick=()=>{stopAll();const n=+document.getElementById('count').value;for(let i=0;i<n;i++)setTimeout(()=>playFart(types[Math.floor(Math.random()*types.length)]),i*(230+Math.random()*220))};if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});const volumeEl=document.getElementById('volume'),volumeLabel=document.getElementById('volumeLabel');function updateVolumeLabel(){const v=+volumeEl.value;volumeLabel.textContent=v>=1?'MAX BLAST':Math.round(v/1.2*100)+'%';if(outputBus&&ctx)outputBus.gain.setTargetAtTime(v,ctx.currentTime,.01)}volumeEl.addEventListener('input',updateVolumeLabel);updateVolumeLabel();
