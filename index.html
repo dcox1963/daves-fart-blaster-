@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#161616" />
+  <title>Dave’s Fart Blaster</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero-header">
+    <img src="daves-fart-blaster-logo.svg" alt="Dave’s Fart Blaster comic logo" class="hero-logo">
+    <div class="hero-copy">
+      <div class="hero-kicker">TOOT IT. BOOT IT. BLAST IT.</div>
+      <p>16 disgustingly hilarious sounds • Bluetooth-ready</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="status card blast-panel">
+      <div>
+        <strong>🔊 CONNECT & BLAST</strong>
+        <p>Connect your Bluetooth speaker in your phone/computer settings. Dave’s Fart Blaster uses the active media output automatically.</p>
+      </div>
+      <button id="testBtn">💨 TEST BLAST</button>
+    </section>
+
+    <section class="grid" aria-label="Fart sounds">
+      <button class="fart" data-fart="classic"><span>💨</span><b>Classic</b><small>Short & proud</small></button>
+      <button class="fart" data-fart="wet"><span>🌧️</span><b>Wet One</b><small>Uh-oh</small></button>
+      <button class="fart" data-fart="squeak"><span>🐭</span><b>Squeaker</b><small>High pitched</small></button>
+      <button class="fart" data-fart="thunder"><span>⚡</span><b>Thunder</b><small>Low & long</small></button>
+      <button class="fart" data-fart="bubble"><span>🫧</span><b>Bubbler</b><small>Gurgly</small></button>
+      <button class="fart" data-fart="tiny"><span>🤏</span><b>Tiny Toot</b><small>Polite-ish</small></button>
+      <button class="fart" data-fart="rip"><span>🚀</span><b>Ripper</b><small>Fast attack</small></button>
+      <button class="fart" data-fart="monster"><span>👹</span><b>Monster</b><small>Big room filler</small></button>
+      <button class="fart" data-fart="shart"><span>💩</span><b>Shart Attack</b><small>Bad decision</small></button>
+      <button class="fart" data-fart="diarrhea"><span>🚽</span><b>Diarrhea Disaster</b><small>Extra sloppy</small></button>
+      <button class="fart" data-fart="mudslide"><span>🟤</span><b>Mudslide</b><small>Deep & disgusting</small></button>
+      <button class="fart" data-fart="gurgler"><span>🤢</span><b>Gut Gurgler</b><small>Bubbly trouble</small></button>
+      <button class="fart" data-fart="cheeks"><span>🍑</span><b>Cheek Flapper</b><small>Rapid wobble</small></button>
+      <button class="fart" data-fart="sick"><span>☣️</span><b>Toxic Cloud</b><small>Long & nasty</small></button>
+      <button class="fart" data-fart="machinegun"><span>💥</span><b>Machine Gun</b><small>Pop-pop-pop</small></button>
+      <button class="fart" data-fart="surprise"><span>😳</span><b>Never Trust It</b><small>Starts innocent...</small></button>
+    </section>
+
+    <section class="controls card">
+      <button id="randomBtn" class="primary">🎲 RANDOM FART</button>
+      <button id="rapidBtn">💥 RAPID FIRE</button>
+      <button id="stopBtn">⏹ STOP</button>
+    </section>
+
+    <section class="card settings">
+      <label>
+        Output Level <span id="volumeLabel">MAX BLAST</span>
+        <input id="volume" type="range" min="0.10" max="1.20" value="1.00" step="0.05">
+      </label>
+      <p class="warning">⚠️ Loud speaker output can surprise people. Start lower if the Bluetooth speaker is close by.</p>
+      <label>
+        Rapid-fire count
+        <input id="count" type="range" min="3" max="15" value="7" step="1">
+        <span id="countLabel">7</span>
+      </label>
+    </section>
+
+    <p class="footer">Pair Bluetooth at the device level, then press a button. No special Bluetooth permissions are required.</p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
