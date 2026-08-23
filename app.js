@@ -2,14 +2,29 @@ const SOURCES={
   real3:'https://bigsoundbank.com/UPLOAD/mp3/0241.mp3',
   real4:'https://bigsoundbank.com/UPLOAD/mp3/1031.mp3',
   designed1:'https://bigsoundbank.com/UPLOAD/mp3/0111.mp3',
-  designed2:'https://bigsoundbank.com/UPLOAD/mp3/0240.mp3'
+  designed2:'https://bigsoundbank.com/UPLOAD/mp3/0240.mp3',
+  foleyPack:'https://bigsoundbank.com/UPLOAD/mp3/0866.mp3',
+  pony:'https://bigsoundbank.com/UPLOAD/mp3/1855.mp3',
+  burps:'https://bigsoundbank.com/UPLOAD/mp3/0242.mp3'
 };
 
 const PRESETS={
-  classic:['real3',1.00], wet:['real4',0.88], squeak:['designed1',1.28], thunder:['real4',0.72],
-  bubble:['real4',0.92], tiny:['real3',1.24], rip:['real3',1.08], monster:['real4',0.68],
-  shart:['real4',0.78], diarrhea:['real4',0.64], mudslide:['real4',0.74], gurgler:['real4',0.84],
-  cheeks:['designed1',1.12], sick:['real4',0.60], machinegun:['designed2',1.10], surprise:['real3',0.86]
+  classic:['real3',1.00],
+  wet:['real4',0.88],
+  squeak:['designed1',1.28],
+  thunder:['pony',0.82],
+  bubble:['foleyPack',1.08],
+  tiny:['real3',1.24],
+  rip:['designed2',1.12],
+  monster:['pony',0.70],
+  shart:['real4',0.78],
+  diarrhea:['foleyPack',0.84],
+  mudslide:['pony',0.76],
+  gurgler:['burps',0.96],
+  cheeks:['designed1',1.12],
+  sick:['burps',0.78],
+  machinegun:['foleyPack',1.20],
+  surprise:['designed2',0.92]
 };
 const TYPES=Object.keys(PRESETS);
 let active=[];
@@ -38,7 +53,7 @@ async function playFart(type='classic'){
     active.push(a);
     await a.play();
     const s=document.getElementById('audioStatus');
-    if(s)s.textContent='Playing real recorded audio';
+    if(s)s.textContent='Playing varied recorded audio';
   }catch(e){
     const s=document.getElementById('audioStatus');
     if(s)s.textContent='Tap again in Safari to allow audio.';
