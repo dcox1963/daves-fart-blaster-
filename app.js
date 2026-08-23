@@ -1,8 +1,67 @@
-let ctx,outputBus,limiter;let activeNodes=[];const types=['classic','wet','squeak','thunder','bubble','tiny','rip','monster','shart','diarrhea','mudslide','gurgler','cheeks','sick','machinegun','surprise'];
-function getCtx(){if(ctx)return ctx;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Web Audio unavailable');ctx=new AC();outputBus=ctx.createGain();limiter=ctx.createDynamicsCompressor();limiter.threshold.value=-8;limiter.knee.value=4;limiter.ratio.value=18;limiter.attack.value=.003;limiter.release.value=.18;outputBus.connect(limiter);limiter.connect(ctx.destination);return ctx}
-async function unlockAudio(){try{if('audioSession'in navigator){try{navigator.audioSession.type='playback'}catch{}}const c=getCtx();if(c.state!=='running')await c.resume();const o=c.createOscillator(),g=c.createGain();g.gain.value=.00001;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.03);return c.state==='running'}catch(e){console.error(e);return false}}
-function stopAll(){activeNodes.forEach(n=>{try{n.stop?.()}catch{}try{n.disconnect?.()}catch{}});activeNodes=[]}
-function noiseBuffer(seconds=1){const c=getCtx(),b=c.createBuffer(1,Math.max(1,c.sampleRate*seconds),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b}
-async function playFart(type='classic'){const ok=await unlockAudio();if(!ok){alert('iPhone blocked audio. Open this site directly in Safari, tap the address bar, then Reload.');return}const c=getCtx(),now=c.currentTime+.01,vol=+document.getElementById('volume').value;outputBus.gain.setTargetAtTime(Math.min(vol,1),now,.01);const cfg={classic:[.65,95,45,.85,10],wet:[1.05,80,30,1,22],squeak:[.45,220,100,.5,5],thunder:[1.65,65,28,1.2,12],bubble:[1.15,105,42,.85,34],tiny:[.25,160,90,.35,3],rip:[.7,125,45,.8,7],monster:[2,58,24,1.3,18],shart:[1.45,72,24,1.15,38],diarrhea:[2.4,68,22,1.15,46],mudslide:[2.15,55,20,1.25,28],gurgler:[1.8,92,26,1,52],cheeks:[1.1,118,38,.95,26],sick:[3,52,20,1.2,16],machinegun:[1.25,145,40,.95,42],surprise:[1.9,180,24,1.05,31]}[type];const[dur,startF,endF,gainPeak,wobble]=cfg;const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(Math.max(.001,Math.min(1,vol)*gainPeak),now+.025);master.gain.exponentialRampToValueAtTime(.0001,now+dur);master.connect(outputBus);const osc=c.createOscillator();osc.type='sawtooth';osc.frequency.setValueAtTime(startF,now);osc.frequency.exponentialRampToValueAtTime(Math.max(20,endF),now+dur);osc.connect(master);osc.start(now);osc.stop(now+dur);const src=c.createBufferSource();src.buffer=noiseBuffer(dur);const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=Math.max(45,startF*1.3);bp.Q.value=.6;const ng=c.createGain();ng.gain.setValueAtTime(.0001,now);ng.gain.linearRampToValueAtTime(Math.min(1,vol)*.38,now+.03);ng.gain.exponentialRampToValueAtTime(.0001,now+dur);src.connect(bp);bp.connect(ng);ng.connect(outputBus);src.start(now);src.stop(now+dur);if(wobble>0){const lfo=c.createOscillator(),lfg=c.createGain();lfo.frequency.value=wobble;lfg.gain.value=startF*.18;lfo.connect(lfg);lfg.connect(osc.frequency);lfo.start(now);lfo.stop(now+dur);activeNodes.push(lfo,lfg)}if(['wet','bubble','shart','diarrhea','mudslide','gurgler','sick','surprise'].includes(type)){for(let i=0;i<((type==='diarrhea'||type==='shart')?18:10);i++){const t=now+Math.random()*dur*.78,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=70+Math.random()*90;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.min(1,vol)*.2,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+.06+Math.random()*.08);o.connect(g);g.connect(outputBus);o.start(t);o.stop(t+.15);activeNodes.push(o,g)}}activeNodes.push(osc,src,master,bp,ng)}
-document.querySelectorAll('.fart').forEach(b=>b.addEventListener('click',()=>playFart(b.dataset.fart)));document.getElementById('randomBtn').onclick=()=>playFart(types[Math.floor(Math.random()*types.length)]);document.getElementById('testBtn').onclick=()=>playFart('classic');document.getElementById('stopBtn').onclick=stopAll;document.getElementById('count').oninput=e=>document.getElementById('countLabel').textContent=e.target.value;document.getElementById('rapidBtn').onclick=async()=>{stopAll();if(!await unlockAudio())return;const n=+document.getElementById('count').value;for(let i=0;i<n;i++)setTimeout(()=>playFart(types[Math.floor(Math.random()*types.length)]),i*320)};const volumeEl=document.getElementById('volume'),volumeLabel=document.getElementById('volumeLabel');function updateVolumeLabel(){const v=+volumeEl.value;volumeLabel.textContent=v>=1?'MAX BLAST':Math.round(v*100)+'%';if(outputBus&&ctx)outputBus.gain.setTargetAtTime(Math.min(v,1),ctx.currentTime,.01)}volumeEl.addEventListener('input',updateVolumeLabel);updateVolumeLabel();
-if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{})}
+const SOURCES={
+  real3:'https://bigsoundbank.com/UPLOAD/mp3/0241.mp3',
+  real4:'https://bigsoundbank.com/UPLOAD/mp3/1031.mp3',
+  designed1:'https://bigsoundbank.com/UPLOAD/mp3/0111.mp3',
+  designed2:'https://bigsoundbank.com/UPLOAD/mp3/0240.mp3'
+};
+
+const PRESETS={
+  classic:['real3',1.00], wet:['real4',0.88], squeak:['designed1',1.28], thunder:['real4',0.72],
+  bubble:['real4',0.92], tiny:['real3',1.24], rip:['real3',1.08], monster:['real4',0.68],
+  shart:['real4',0.78], diarrhea:['real4',0.64], mudslide:['real4',0.74], gurgler:['real4',0.84],
+  cheeks:['designed1',1.12], sick:['real4',0.60], machinegun:['designed2',1.10], surprise:['real3',0.86]
+};
+const TYPES=Object.keys(PRESETS);
+let active=[];
+
+function volume(){return Math.max(.1,Math.min(1,Number(document.getElementById('volume')?.value||1)));}
+function makeAudio(type){
+  const [key,rate]=PRESETS[type]||PRESETS.classic;
+  const a=new Audio(SOURCES[key]);
+  a.preload='auto';
+  a.playsInline=true;
+  a.volume=volume();
+  a.playbackRate=rate;
+  a.preservesPitch=false;
+  a.webkitPreservesPitch=false;
+  a.addEventListener('ended',()=>active=active.filter(x=>x!==a),{once:true});
+  a.addEventListener('error',()=>{
+    const s=document.getElementById('audioStatus');
+    if(s)s.textContent='Sound could not load — check internet and reload Safari.';
+  },{once:true});
+  return a;
+}
+
+async function playFart(type='classic'){
+  try{
+    const a=makeAudio(type);
+    active.push(a);
+    await a.play();
+    const s=document.getElementById('audioStatus');
+    if(s)s.textContent='Playing real recorded audio';
+  }catch(e){
+    const s=document.getElementById('audioStatus');
+    if(s)s.textContent='Tap again in Safari to allow audio.';
+  }
+}
+function stopAll(){active.forEach(a=>{try{a.pause();a.currentTime=0}catch{}});active=[];}
+
+document.querySelectorAll('.fart').forEach(b=>b.addEventListener('click',()=>playFart(b.dataset.fart)));
+document.getElementById('randomBtn').onclick=()=>playFart(TYPES[Math.floor(Math.random()*TYPES.length)]);
+document.getElementById('testBtn').onclick=()=>playFart('classic');
+document.getElementById('stopBtn').onclick=stopAll;
+document.getElementById('count').oninput=e=>document.getElementById('countLabel').textContent=e.target.value;
+document.getElementById('rapidBtn').onclick=()=>{
+  stopAll();
+  const n=Number(document.getElementById('count').value||7);
+  for(let i=0;i<n;i++)setTimeout(()=>playFart(TYPES[Math.floor(Math.random()*TYPES.length)]),i*320);
+};
+
+const volumeEl=document.getElementById('volume'),volumeLabel=document.getElementById('volumeLabel');
+function updateVolumeLabel(){const v=volume();volumeLabel.textContent=v>=.99?'MAX BLAST':Math.round(v*100)+'%';active.forEach(a=>a.volume=v);}
+volumeEl.addEventListener('input',updateVolumeLabel);updateVolumeLabel();
+
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))).catch(()=>{});
+  if('caches'in window)caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k)))).catch(()=>{});
+}
