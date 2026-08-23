@@ -1,42 +1,35 @@
 const SOURCES={
-  real3:'https://bigsoundbank.com/UPLOAD/mp3/0241.mp3',
-  real4:'https://bigsoundbank.com/UPLOAD/mp3/1031.mp3',
-  designed1:'https://bigsoundbank.com/UPLOAD/mp3/0111.mp3',
-  designed2:'https://bigsoundbank.com/UPLOAD/mp3/0240.mp3',
-  foleyPack:'https://bigsoundbank.com/UPLOAD/mp3/0866.mp3',
-  pony:'https://bigsoundbank.com/UPLOAD/mp3/1855.mp3',
-  burps:'https://bigsoundbank.com/UPLOAD/mp3/0242.mp3'
+  classic:'https://bigsoundbank.com/UPLOAD/mp3/0241.mp3',
+  wet:'https://bigsoundbank.com/UPLOAD/mp3/1031.mp3',
+  pig1:'https://bigsoundbank.com/UPLOAD/mp3/1691.mp3',
+  pig2:'https://bigsoundbank.com/UPLOAD/mp3/1692.mp3',
+  pig3:'https://bigsoundbank.com/UPLOAD/mp3/1693.mp3',
+  pony1:'https://bigsoundbank.com/UPLOAD/mp3/1854.mp3',
+  pony2:'https://bigsoundbank.com/UPLOAD/mp3/1855.mp3',
+  farts:'https://bigsoundbank.com/UPLOAD/mp3/0866.mp3'
 };
 
 const PRESETS={
-  classic:['real3',1.00],
-  wet:['real4',0.88],
-  squeak:['designed1',1.28],
-  thunder:['pony',0.82],
-  bubble:['foleyPack',1.08],
-  tiny:['real3',1.24],
-  rip:['designed2',1.12],
-  monster:['pony',0.70],
-  shart:['real4',0.78],
-  diarrhea:['foleyPack',0.84],
-  mudslide:['pony',0.76],
-  gurgler:['burps',0.96],
-  cheeks:['designed1',1.12],
-  sick:['burps',0.78],
-  machinegun:['foleyPack',1.20],
-  surprise:['designed2',0.92]
+  classic:{src:'classic',rate:1.00},
+  wet:{src:'wet',rate:1.00},
+  ripper:{src:'pig1',rate:1.00},
+  thunder:{src:'pony1',rate:1.00},
+  kt:{src:'pig2',rate:1.00},
+  toxic:{src:'pig3',rate:1.00},
+  monster:{src:'pony2',rate:1.00},
+  dave:{src:'farts',rate:0.92}
 };
 const TYPES=Object.keys(PRESETS);
 let active=[];
 
 function volume(){return Math.max(.1,Math.min(1,Number(document.getElementById('volume')?.value||1)));}
 function makeAudio(type){
-  const [key,rate]=PRESETS[type]||PRESETS.classic;
-  const a=new Audio(SOURCES[key]);
+  const p=PRESETS[type]||PRESETS.classic;
+  const a=new Audio(SOURCES[p.src]);
   a.preload='auto';
   a.playsInline=true;
   a.volume=volume();
-  a.playbackRate=rate;
+  a.playbackRate=p.rate;
   a.preservesPitch=false;
   a.webkitPreservesPitch=false;
   a.addEventListener('ended',()=>active=active.filter(x=>x!==a),{once:true});
@@ -47,13 +40,25 @@ function makeAudio(type){
   return a;
 }
 
+async function playOne(type){
+  const a=makeAudio(type);
+  active.push(a);
+  await a.play();
+}
+
 async function playFart(type='classic'){
   try{
-    const a=makeAudio(type);
-    active.push(a);
-    await a.play();
+    if(type==='mix'){
+      // The Mix is intentionally layered from two very different recordings.
+      await Promise.all([playOne('wet'),new Promise(r=>setTimeout(r,115)).then(()=>playOne('ripper'))]);
+    }else if(type==='dave'){
+      // Dave's Stank Butt gets the long, nasty recording at full output.
+      await playOne('dave');
+    }else{
+      await playOne(type);
+    }
     const s=document.getElementById('audioStatus');
-    if(s)s.textContent='Playing varied recorded audio';
+    if(s)s.textContent='MAX OUTPUT • recorded audio';
   }catch(e){
     const s=document.getElementById('audioStatus');
     if(s)s.textContent='Tap again in Safari to allow audio.';
@@ -63,13 +68,13 @@ function stopAll(){active.forEach(a=>{try{a.pause();a.currentTime=0}catch{}});ac
 
 document.querySelectorAll('.fart').forEach(b=>b.addEventListener('click',()=>playFart(b.dataset.fart)));
 document.getElementById('randomBtn').onclick=()=>playFart(TYPES[Math.floor(Math.random()*TYPES.length)]);
-document.getElementById('testBtn').onclick=()=>playFart('classic');
+document.getElementById('testBtn').onclick=()=>playFart('dave');
 document.getElementById('stopBtn').onclick=stopAll;
 document.getElementById('count').oninput=e=>document.getElementById('countLabel').textContent=e.target.value;
 document.getElementById('rapidBtn').onclick=()=>{
   stopAll();
   const n=Number(document.getElementById('count').value||7);
-  for(let i=0;i<n;i++)setTimeout(()=>playFart(TYPES[Math.floor(Math.random()*TYPES.length)]),i*320);
+  for(let i=0;i<n;i++)setTimeout(()=>playFart(TYPES[Math.floor(Math.random()*TYPES.length)]),i*420);
 };
 
 const volumeEl=document.getElementById('volume'),volumeLabel=document.getElementById('volumeLabel');
